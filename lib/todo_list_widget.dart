@@ -9,7 +9,7 @@ class ToDoList extends StatefulWidget {
 class _TodoListState extends State<ToDoList> {
   final List<String> _todoItems = List<String>();
   final TextEditingController _textFieldController = TextEditingController();
-  bool _isValid = true;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -24,19 +24,20 @@ class _TodoListState extends State<ToDoList> {
           Container(
             margin: EdgeInsets.only(right: 10.0),
             child: FloatingActionButton(
-                tooltip: 'Delete',
-                child: Icon(
-                  Icons.delete,
-                ),
-                backgroundColor: Colors.red,
-                splashColor: Colors.redAccent,
-                //TODO refactor
-                onPressed: () {
-                  if (_todoItems.length > 0) {}
+              tooltip: 'Delete',
+              child: Icon(
+                Icons.delete,
+              ),
+              backgroundColor: Colors.red,
+              splashColor: Colors.redAccent,
+              onPressed: () {
+                if (_todoItems.isNotEmpty) {
                   setState(() {
                     _todoItems.removeAt(0);
                   });
-                }),
+                }
+              },
+            ),
           ),
           FloatingActionButton(
               tooltip: 'Add',
@@ -45,7 +46,7 @@ class _TodoListState extends State<ToDoList> {
               ),
               backgroundColor: Colors.green,
               splashColor: Colors.greenAccent,
-              onPressed: () => _addTodoItem(context)),
+              onPressed: () => _addToDoItem(context)),
         ],
       ),
     );
@@ -68,22 +69,22 @@ class _TodoListState extends State<ToDoList> {
               });
             },
             child: ListTile(
-              leading: _buildTodoItemNumber(index + 1),
-              title: _buildTodoItemTitle(_todoItems[index]),
-              trailing: _buildTodoItemDeleteButton(index),
+              leading: _buildToDoItemNumber(index + 1),
+              title: _buildToDoItemTitle(_todoItems[index]),
+              trailing: _buildToDoItemDeleteButton(index),
             ),
           );
         });
   }
 
-  Widget _buildTodoItemNumber(int itemNumber) {
+  Widget _buildToDoItemNumber(int itemNumber) {
     return Container(
       alignment: Alignment.centerLeft,
-      width: 30.0,
-      height: 30.0,
+      width: 24.0,
+      height: 24.0,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.black,
+        color: Colors.grey,
       ),
       child: Align(
         alignment: Alignment.center,
@@ -100,19 +101,19 @@ class _TodoListState extends State<ToDoList> {
     );
   }
 
-  Widget _buildTodoItemTitle(String title) {
+  Widget _buildToDoItemTitle(String title) {
     return Text(
       title,
       style: TextStyle(
         color: Colors.black,
         fontFamily: 'GoogleSans',
-        fontSize: 15.0,
-        fontWeight: FontWeight.w600,
+        fontSize: 18.0,
+        fontWeight: FontWeight.w500,
       ),
     );
   }
 
-  Widget _buildTodoItemDeleteButton(int itemIndex) {
+  Widget _buildToDoItemDeleteButton(int itemIndex) {
     return IconButton(
       color: Colors.red,
       icon: Icon(Icons.delete),
@@ -126,46 +127,50 @@ class _TodoListState extends State<ToDoList> {
     });
   }
 
-  void _addTodoItem(BuildContext context) {
+  void _addToDoItem(BuildContext context) {
     showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Write new action todo'),
-            content: TextField(
-              controller: _textFieldController,
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Write new action todo'),
+          content: Form(
+            key: _formKey,
+            child: TextFormField(
               decoration: InputDecoration(
-                  hintText: 'Todo action',
-                  errorText: _isValid ? null : "Field can't be empty"),
-            ),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('Cancel'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
+                hintText: "Write todo action",
               ),
-              FlatButton(
-                child: Text('Add'),
-                onPressed: () {
-                  if (_textFieldController.text.isNotEmpty) {
-                    print("valid");
-                    setState(() {
-                      _isValid = true;
-                      _todoItems.add(_textFieldController.text);
-                      _textFieldController.clear();
-                    });
-                    Navigator.of(context).pop();
-                  } else {
-                    print("invalid");
-                    setState(() {
-                      _isValid = false;
-                    });
-                  }
-                },
-              )
-            ],
-          );
-        });
+              controller: _textFieldController,
+              validator: (value) {
+                if (value.isEmpty) {
+                  return "Field mustn't be null";
+                } else {
+                  return null;
+                }
+              },
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text('Add'),
+              onPressed: () {
+                if (_formKey.currentState.validate()) {
+                  setState(() {
+                    _todoItems.add(_textFieldController.text);
+                    _textFieldController.clear();
+                  });
+                  Navigator.of(context).pop();
+                }
+              },
+            )
+          ],
+        );
+      },
+    );
   }
 }
