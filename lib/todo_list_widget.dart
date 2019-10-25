@@ -26,7 +26,7 @@ class _TodoListState extends State<ToDoList> {
             child: FloatingActionButton(
               tooltip: 'Delete',
               child: Icon(
-                Icons.delete,
+                Icons.remove,
               ),
               backgroundColor: Colors.red,
               splashColor: Colors.redAccent,
@@ -116,7 +116,10 @@ class _TodoListState extends State<ToDoList> {
   Widget _buildToDoItemDeleteButton(int itemIndex) {
     return IconButton(
       color: Colors.red,
-      icon: Icon(Icons.delete),
+      icon: Icon(
+        Icons.remove_circle,
+        color: Colors.red,
+      ),
       onPressed: () => _onDeleteItem(itemIndex),
     );
   }
