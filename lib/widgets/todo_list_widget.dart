@@ -10,7 +10,7 @@ class _TodoListState extends State<ToDoList> {
   final _todoItems = <String>[];
   final _textFieldController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  //final _focusNode = FocusNode();
+  final _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -53,25 +53,27 @@ class _TodoListState extends State<ToDoList> {
 
   Widget _buildToDoList() {
     return ListView.builder(
-        padding: const EdgeInsets.all(10.0),
-        shrinkWrap: true,
-        itemCount: _todoItems.length,
-        itemBuilder: (BuildContext context, int index) {
-          return Dismissible(
-            key: Key('${_todoItems[index]}$index'),
-            background: Container(
-              color: Colors.grey,
-            ),
-            onDismissed: (direction) {
-              setState(() => _todoItems.removeAt(index));
-            },
-            child: ListTile(
-              leading: _buildToDoItemNumber(index + 1),
-              title: _buildToDoItemTitle(_todoItems[index]),
-              trailing: _buildToDoItemDeleteButton(index),
-            ),
-          );
-        });
+      padding: const EdgeInsets.all(10.0),
+      shrinkWrap: true,
+      itemCount: _todoItems.length,
+      controller: _scrollController,
+      itemBuilder: (BuildContext context, int index) {
+        return Dismissible(
+          key: Key('${_todoItems[index]}$index'),
+          background: Container(
+            color: Colors.grey,
+          ),
+          onDismissed: (direction) {
+            setState(() => _todoItems.removeAt(index));
+          },
+          child: ListTile(
+            leading: _buildToDoItemNumber(index + 1),
+            title: _buildToDoItemTitle(_todoItems[index]),
+            trailing: _buildToDoItemDeleteButton(index),
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildToDoItemNumber(int itemNumber) {
@@ -122,9 +124,7 @@ class _TodoListState extends State<ToDoList> {
   }
 
   void _onDeleteToDoItem(int itemIndex) {
-    setState(() {
-      _todoItems.removeAt(itemIndex);
-    });
+    setState(() => _todoItems.removeAt(itemIndex));
   }
 
   void _onAddToDoItem(BuildContext context) {
@@ -154,19 +154,18 @@ class _TodoListState extends State<ToDoList> {
           actions: <Widget>[
             FlatButton(
               child: const Text('Cancel'),
-              onPressed: () {
-                _textFieldController.clear();
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
             FlatButton(
               child: const Text('Add'),
               onPressed: () {
                 if (_formKey.currentState.validate()) {
-                  setState(() {
-                    _todoItems.add(_textFieldController.text);
-                    _textFieldController.clear();
-                  });
+                  setState(
+                    () {
+                      _todoItems.add(_textFieldController.text);
+                      _animateToListEnd();
+                    },
+                  );
                   Navigator.of(context).pop();
                 }
               },
@@ -174,6 +173,14 @@ class _TodoListState extends State<ToDoList> {
           ],
         );
       },
+    ).whenComplete(() => _textFieldController.clear());
+  }
+
+  void _animateToListEnd() {
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      curve: Curves.easeOut,
+      duration: const Duration(milliseconds: 500),
     );
   }
 }
