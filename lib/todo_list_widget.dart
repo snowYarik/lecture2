@@ -7,22 +7,23 @@ class ToDoList extends StatefulWidget {
 }
 
 class _TodoListState extends State<ToDoList> {
-  final List<String> _todoItems = List<String>();
-  final TextEditingController _textFieldController = TextEditingController();
+  final _todoItems = <String>[];
+  final _textFieldController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  //final _focusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("ToDo List"),
+        title: const Text('ToDo List'),
       ),
       body: _buildToDoList(),
       floatingActionButton: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
           Container(
-            margin: EdgeInsets.only(right: 10.0),
+            margin: const EdgeInsets.only(right: 10.0),
             child: FloatingActionButton(
               tooltip: 'Delete',
               child: Icon(
@@ -32,9 +33,7 @@ class _TodoListState extends State<ToDoList> {
               splashColor: Colors.redAccent,
               onPressed: () {
                 if (_todoItems.isNotEmpty) {
-                  setState(() {
-                    _todoItems.removeAt(0);
-                  });
+                  setState(() => _todoItems.removeAt(0));
                 }
               },
             ),
@@ -46,7 +45,7 @@ class _TodoListState extends State<ToDoList> {
               ),
               backgroundColor: Colors.green,
               splashColor: Colors.greenAccent,
-              onPressed: () => _addToDoItem(context)),
+              onPressed: () => _onAddToDoItem(context)),
         ],
       ),
     );
@@ -54,19 +53,17 @@ class _TodoListState extends State<ToDoList> {
 
   Widget _buildToDoList() {
     return ListView.builder(
-        padding: EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(10.0),
         shrinkWrap: true,
         itemCount: _todoItems.length,
         itemBuilder: (BuildContext context, int index) {
           return Dismissible(
-            key: Key("${_todoItems[index]}$index"),
+            key: Key('${_todoItems[index]}$index'),
             background: Container(
               color: Colors.grey,
             ),
             onDismissed: (direction) {
-              setState(() {
-                _todoItems.removeAt(index);
-              });
+              setState(() => _todoItems.removeAt(index));
             },
             child: ListTile(
               leading: _buildToDoItemNumber(index + 1),
@@ -120,27 +117,29 @@ class _TodoListState extends State<ToDoList> {
         Icons.remove_circle,
         color: Colors.red,
       ),
-      onPressed: () => _onDeleteItem(itemIndex),
+      onPressed: () => _onDeleteToDoItem(itemIndex),
     );
   }
 
-  void _onDeleteItem(int itemIndex) {
+  void _onDeleteToDoItem(int itemIndex) {
     setState(() {
       _todoItems.removeAt(itemIndex);
     });
   }
 
-  void _addToDoItem(BuildContext context) {
-    showDialog(
+  void _onAddToDoItem(BuildContext context) {
+    showDialog<void>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Write new action todo'),
+          title: const Text('Write new action todo'),
           content: Form(
             key: _formKey,
             child: TextFormField(
+              autofocus: true,
+              //focusNode: _focusNode,
               decoration: InputDecoration(
-                hintText: "Write todo action",
+                hintText: 'Write todo action',
               ),
               controller: _textFieldController,
               validator: (value) {
@@ -154,13 +153,14 @@ class _TodoListState extends State<ToDoList> {
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
+                _textFieldController.clear();
                 Navigator.of(context).pop();
               },
             ),
             FlatButton(
-              child: Text('Add'),
+              child: const Text('Add'),
               onPressed: () {
                 if (_formKey.currentState.validate()) {
                   setState(() {
